@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html class="cdpf config {{ htmlClasses }}">
+<head>
+    <title>CDPF</title>
+    <meta name="viewport" content="width=device-width">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script src="lib/jquery.autosize.min.js"></script>
+    <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-darkness/jquery-ui.css" rel="stylesheet" type="text/css" />
+    <style>
+        @import url(style.css);
+        {% if customCSS %}
+        @import url({{ customCSS }});
+        {% endif %}
+        .message {
+            float: left;
+        }
+        .count {
+            float: right;
+        }
+    </style>
+    {% include 'lib/mobile-rotation-script.twig' %}
+    {% if googleAnalyticsID is defined %}
+        {% include 'lib/analytics.twig' %}
+    {% endif %}
+</head>
+<body>
+
+<div class='title'>Edit Config</div>
+
+<div>
+    {% if message is defined %}
+        <div class="message {{ messageType }}">{{ message }}</div>
+    {% endif %}
+    <div class="count">Album Count: {{ albumCount }}</div>
+</div>
+
+<div id='config'>
+    {% if configReadOnly %}
+        <div class="warning">
+            <strong>Warning:</strong> The config file appears to be unmodifiable by the web application. Make sure the 'data'
+            directory is writable and the config file if it exists is writable. Note that the web
+            application often runs as a different user than your normal or admin login. For example,
+            by default, current versions of Mac OS run apache/lighttp/etc and php as '_www' and linux often uses
+            something like 'nobody'. If you are using windows/iis, abandon all hope.
+            <code>{{ configFile }}</code>
+        </div>
+    {% endif %}
+    <textarea id="undo-config-text" style="display:none" {{ configReadOnly ? 'readonly="readonly"' }}>{{ configText }}</textarea>
+    <form method="post">
+        <textarea id='config-text' name="config-text">{{ configText }}</textarea>
+        <div style="text-align: center">
+            <button id="config-reset">Reset</button>
+            <button type="submit" name="config-save" value="1" {{ configReadOnly ? 'disabled="disabled"' }}>Save</button>
+        </div>
+    </form>
+</div>
+</body>
+<script>
+    $('#config-reset').on('click',function(){
+        $('#config-text').val($('#undo-config-text').val());
+    });
+    $('#config-text').autosize().trigger('autosize.resize');
+</script>
+{% if customJS %}
+    <script src="{{ customJS }}"></script>
+{% endif %}
+</html>

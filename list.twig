@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CDPF</title>
+		<style>
+			img { max-height: 350px; max-width: 90%; }
+			body { text-align: center; }
+		</style>
+	</head>
+	<body>
+		{% for item in images[list] %}
+				<div class='title'>{{ item.name|e }}</div>
+				<div><img src='/{{ list }}/{{ item.name|e('html_attr') }}'/></div>
+		{% endfor %}
+	</body>
+</html>

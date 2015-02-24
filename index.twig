@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="cdpf home {{ htmlClasses }}" data-detection="{{ htmlClasses }}">
+	<head>
+		<title>CDPF</title>
+        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-darkness/jquery-ui.css" rel="stylesheet" type="text/css" />
+		<style>
+			@import url(style.css?ts={{ filetimestamp("style.css") }});
+            {% if customCSS %}
+            @import url({{ customCSS }});
+            {% endif %}
+		</style>
+        <meta name="viewport" content="width=device-width">
+		<link rel="icon" href="favicon.png" type="image/x-icon">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script src="lib/jquery.lazyload.min.js"></script>
+        <script src="lib/jquery.autosize.min.js"></script>
+        <script src="lib/jquery.upload-1.0.2.min.js"></script>
+        {% include 'lib/mobile-rotation-script.twig' %}
+        {% if googleAnalyticsID is defined %}
+            {% include 'lib/analytics.twig' %}
+        {% endif %}
+	</head>
+	<body>
+		<script>
+			$('body').on('click','button.delete',function(e){
+				var answer = confirm("Are you sure you want to delete this photo?");
+				if (answer) {
+					var form = $('#delete').css('display','block');
+					form.find('input[name="delete-image"]').val($(this).attr('data-image'));
+					form.submit();
+				}
+			});
+
+            $('body').on('click','button.rotate',function(e){
+                var button = $(this);
+                var dir = button.attr('data-dir');
+                var name = button.attr('data-image');
+                $.ajax({
+                    data: {
+                        rotate: 1
+                        ,dir: dir
+                        ,name: name
+                        {% if verbose %} ,verbose:1 {% endif %}
+                    },
+                    url: '?',
+                    success: function(data) {
+                        var img = button.closest('.row').find('img.thumbnail');
+                        var url = img.attr('src');
+                        img.attr('src',url+'&P'+Math.round(Math.random()*1000000)+'=1');
+                    }
+                })
+            });
+
+            function endEdit(row,save) {
+                if (save===true) {
+                    var edit = row.find('button.edit');
+                    var textarea = row.find('textarea.caption');
+                    var newCaption = textarea.length ? textarea.val() : edit.attr('data-pending');
+                    var captionDiv = row.find('div.caption');
+                    var image = edit.attr('data-image');
+                    captionDiv.effect( "pulsate", {times:10}, 10000, function(){
+                        edit.removeAttr('data-pending');
+                        var answer = confirm('Error saving caption, try again?');
+                        if (answer) {
+                            endEdit(row,true);
+                        }
+                    });
+                    edit.attr('data-pending',newCaption);
+                    $.ajax({
+                        url: '?',
+                        data: {
+                            save: "1"
+                            ,caption: newCaption
+                            ,image: image
+                            {% if verbose %} ,verbose:1 {% endif %}
+                        },
+                        success: function(data) {
+                            edit.removeAttr('data-pending');
+                            captionDiv.finish().fadeOut().text(data).fadeIn().effect("highlight");
+                            edit.attr('data-caption',newCaption);
+                        },
+                        error: function() {
+                            edit.removeAttr('data-pending');
+                            captionDiv.finish();
+                            var answer = confirm('Error saving caption, try again?');
+                            if (answer) {
+                                endEdit(row,true);
+                            }
+                        }
+                    });
+                }
+                row.find('form.caption-edit').remove();
+                $('#cover').hide();
+                return false;
+            }
+
+            function startEdit(row) {
+                row.find('.container').css('z-index','auto');
+                var div = row.find('div.caption');
+                div.closest('.container').css('z-index',10500);
+                var form = $('<form class="caption-edit">').insertAfter(div);
+                var textarea = $('<textarea class="caption">').css({
+                    'font-family': div.css('font-family'),
+                    'font-style': div.css('font-style'),
+                    'font-size': div.css('font-size'),
+                    'text-align': div.css('text-align'),
+                    'height':22,
+                    'width': 'calc( 100% - 4px)'
+                }).appendTo(form).autosize().val(row.find('button.edit').attr('data-caption')).trigger('autosize.resize');
+                $('<div class="controls"><button class="cancel">Cancel</button> <button type="submit" class="save">Save</button></div>')
+                .appendTo(form);
+                textarea.trigger('focus');
+                $('#cover').show();
+                return false;
+            }
+
+            $('body').on('click','button.edit, div.caption',function(e){
+                var row = $(this).closest('.row');
+                if (row.find('button.edit').attr('data-pending')) {
+                    alert('Save pending, try again later.');
+                    return false;
+                }
+                return startEdit(row);
+            });
+
+            $('body').on('click','button.cancel',function(e){
+                return endEdit($(this).closest('.row'),false);
+            });
+
+            $('body').on('click','button.save',function(e){
+                return endEdit($(this).closest('.row'),true);
+            }).on('submit','form.caption-edit',function(e){
+                return endEdit($(this).closest('.row'),true);
+            });
+
+            function initAlbum(album) {
+            }
+
+            $(document).on('click','.albumButton',function(){
+                $('.albumButton.selected').removeClass('selected');
+                var album = $(this).addClass('selected').attr('data-album-num');
+                $('#album'+album).show().siblings().hide();
+                $('input[name=the-album]').val(album);
+                localStorage.selectedAlbum = album;
+                return false;
+            });
+
+			$(function(){
+				if (localStorage!==undefined) {
+					if (localStorage.selectedAlbum!==undefined) {
+						var albumButton = $('.albumButton[data-album-num='+localStorage.selectedAlbum.replace(/\D/g,'')+']');
+						albumButton.click();
+					}
+				} else {
+					localStorage = { selectedAlbum: {{ albumSelected }} };
+				}
+			});
+        </script>
+
+        <div class='title'>
+            <div id="pallet">
+                <form id='logout' method='post'>
+                    <input id='logouter' type='submit' name='logout' value='Logout'/>
+                    {% if verbose %}
+                        <input type="hidden" name="verbose" value="1"/>
+                    {% endif %}
+                </form>
+            </div>
+            {% if ip %}
+            <div id="remote">
+                <a href="http://{{ ip }}"/>
+                    <img />
+                </a>
+            </div>
+            <script>
+                var remoteTimer = setTimeout(function(){
+                    console.log('timer');
+                    var img = $('#remote img');
+                    if (img.naturalWidth) {
+                        $('#remote').css('height',this.naturalHeight).css('width',this.naturalWidth);
+                    } else {
+                        $('#remote').remove();
+                    }
+                },2500);
+                $('#remote img').on('load',function(){
+                    console.log('load');
+                    clearTimeout(remoteTimer);
+                    $('#remote').css('height',this.naturalHeight).css('width',this.naturalWidth);
+                }).on('error',function(){
+                    console.log('error');
+                    clearTimeout(remoteTimer);
+                    $('#remote').remove();
+                }).attr('src','http://{{ ip }}/remote.png');
+            </script>
+
+            {% endif %}
+            {{ title|e }}
+        </div>
+
+        <div id='upload'>
+            <div class='subtitle'>{{ message|e }}</div>
+            <div id="uploadArea">
+                <div id="uploadForm">
+                    <form method="post" enctype="multipart/form-data">
+                        <input type="file" name="the-file" id="file1">
+                        <input type="hidden" name="the-album" value="{{ albumSelected }}"/>
+                        {% if verbose %}
+                            <input type="hidden" name="verbose" value="1"/>
+                        {% endif %}
+                    </form>
+                </div>
+                <div id="uploadProgress">
+                    <img src="busy.gif" style="zoom: 33%;"/>
+                </div>
+            </div>
+        </div>
+
+        {% if albumCount>1 %}
+            <div class='albums'>
+                {% for i in range( 1 , albumCount ) %}
+                <div class="albumButton {% if albumSelected == i %}selected{% endif %}" data-album-num="{{ i }}" >
+                    {% if albumNames[i-1] is defined %}
+                        {{ albumNames[i-1] }}
+                    {% else %}
+                        {{ i }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div id='photos'>
+        {% for i in range(1,albumCount) %}
+            <div class='album' id="album{{  i  }}" {% if albumSelected != i %}style='display: none;'{% endif %} >
+                {% if albumCount>1 or albumNames[0] is defined %}
+                    <div class='subtitle'>
+                        {% if albumNames[i-1] is defined %}
+                            {{ albumNames[i-1] }}
+                        {% else %}
+                            {{ i }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% for item in images[i] %}
+                    {% include "image.twig" %}
+                {% else %}
+                    <div class='message no-photos'>No photos to display {{ i }}</div>
+                {% endfor %}
+            </div>
+		{% endfor %}
+        </div>
+
+        <div id="config">
+        </div>
+
+		<div id='footer'>
+			<form id='logout' method='post'>
+				<input type='submit' name='logout' value='Logout'/>
+                {% if verbose %}
+                    <input type="hidden" name="verbose" value="1"/>
+                {% endif %}
+			</form>
+		</div>
+
+		<div style='display:none;'>
+			<form id='delete' method='post'>
+				<input type='hidden' name='delete-image' value=''/>
+                {% if verbose %}
+                    <input type="hidden" name="verbose" value="1"/>
+                {% endif %}
+			</form>
+		</div>
+        <div id="cover"></div>
+	</body>
+	<script>
+        $('.lazy').lazyload({effect : "fadeIn"})
+	</script>
+    {% if customJS %}
+        <script src="{{ customJS }}"></script>
+    {% endif %}
+    <script src="home.js?ts={{ filetimestamp("home.js") }}"></script>
+    <script type="text/javascript">
+        $('#file1').change(function() {
+            $(this).upload2(
+                '/',
+                {
+                    "the-album": $('input[name=the-album]').val(),
+                    "upload-submit" : 1
+                },
+                function(event,data) {
+                    if (event==="start") {
+                        $('#uploadArea').addClass('uploading');
+                    } else {
+                        $('#uploadArea').removeClass('uploading');
+                        var section = $(data);
+                        var message = section.find('.ajax-message').text();
+                        $('.subtitle').text(message?message:"");
+                        section.find('.ajax-message').remove();
+                        $('.album:visible').append(section);
+                        $('.no-photos').remove();
+                    }
+                },
+                'html'
+            );
+        });
+    </script>
+
+</html>

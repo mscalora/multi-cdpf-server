@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html class="cdpf auth {{ setup ? "setup" : "login" }} {{ htmlClasses }}">
+	<head>
+		<title>CDPF</title>
+        <meta name="viewport" content="width=device-width">
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/ui-darkness/jquery-ui.css" rel="stylesheet" type="text/css" />
+		<style>
+			@import url(style.css);
+            {% if customCSS %}
+                @import url({{ customCSS }});
+            {% endif %}
+        </style>
+        {% include 'lib/mobile-rotation-script.twig' %}
+        {% if googleAnalyticsID is defined %}
+            {% include 'lib/analytics.twig' %}
+        {% endif %}
+    </head>
+	<body>
+	
+		<div class='title'>{{ title|e }}</div>
+		
+		<div id='login'>
+			<form id='logout' method='post'>
+				<div class='prompt'>
+                    {% if authPrompt is defined %}
+                        {{ authPrompt }}
+                    {% else %}
+                        {{ prompt }}
+                    {% endif %}
+                </div>
+                {% if authImage is defined %}
+                    <div class="image"><img src="{{ authImage }}"</div>
+                {% endif %}
+				<div class="response">
+                    <label>
+                        {% if authLabel is defined %}
+                            {{ authLabel }}
+                        {% else %}
+                            Password:
+                        {% endif %}
+                        <input autofocus="1" minlength="6" type='password' name='secret' />
+                    </label>
+                </div>
+				{% if setup %}
+					<div><input type='submit' name='setup' value='Set Password'/></div>
+				{% else %}
+					<div><input type='submit' name='login' value='Login'/></div>
+				{% endif %}
+			</form>
+		</div>
+
+    </body>
+    {% if customJS %}
+        <script src="{{ customJS }}"></script>
+    {% endif %}
+</html>

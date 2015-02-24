@@ -1,0 +1,27 @@
+<div>
+    <div class="row">
+        {% if ajaxMessage %}
+        <div class='ajax-message' style="display:none">{{ ajaxMessage }}</div>
+        {% endif %}
+        <div class='name'>
+            <span>{{ item.name|e }}</span>
+            <span>
+                <button class="delete" data-image="{{ i }}/{{ item.name|e('html_attr') }}">Delete</button>
+                <button class="rotate" data-dir="left" data-image="{{ i }}/{{ item.name|e('html_attr') }}">&#x21BA;</button>
+                <button class="rotate" data-dir="right" data-image="{{ i }}/{{ item.name|e('html_attr') }}">&#x21BB;</button>
+                <button class="edit" data-image="{{ i }}/{{ item.name|e('html_attr') }}" data-caption="{{ item.caption }}">Edit Caption</button>
+            </span>
+        </div>
+        <div class='image'>
+            <div class='container'>
+                {% if loop.index<5 %}
+                    <img class='thumbnail' src='thumb.php?name={{ i }}/{{ item.name|e('html_attr') }}' width="{{ thumbWidth }}" height="{{ thumbHeight }}"/>
+                {% else %}
+                    <img class='thumbnail lazy' src='placeholder.png' data-original='thumb.php?name={{ i }}/{{ item.name|e('html_attr') }}' width="{{ thumbWidth }}" height="{{ thumbHeight }}"/>
+                {% endif %}
+                <div class='caption'>{{ item.caption }}</div>
+            </div>
+        </div>
+        <div class='info'>{{ item.size[0] }} x {{ item.size[1] }}</div>
+    </div>
+</div>

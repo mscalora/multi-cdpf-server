@@ -1,0 +1,212 @@
+	@import url(http://fonts.googleapis.com/css?family=Oxygen);
+
+    .ismobile body {
+        padding: 0;
+    }
+    .ismobile #upload, .ismobile #photos, .ismobile #footer, .ismobile #login, .ismobile .albums, .ismobile .title {
+        min-height: 0;
+        min-width: 0;
+        padding: 0;
+    }
+
+    img {
+        max-width: 400px;
+        max-height: 350px;
+    }
+
+    .ismobile img {
+        max-width: 100%;
+    }
+
+	div.image, div.controls {
+		display: inline-block; 
+		vertical-align: middle; 
+	}
+	
+	h2 {
+		text-align: center;
+	}
+	body {
+		margin: 0;
+		padding: 0 30px;
+		background: rgb(230, 253, 223);
+		font-family: Oxygen, Verdana, Arial, sans-serif;
+	}
+    #upload, #photos, #footer, #login, .albums, .title {
+        max-width: 900px;
+        min-width: 400px;
+    }
+    #upload, #photos, #footer, #login, .albums {
+		text-align: center;
+		background: rgb(202, 253, 186);
+		margin: 10px auto;
+		border-radius: 12px;
+		padding: 10px;
+	}
+    .albumButton.selected, .albumButton.selected:hover  {
+        background: #35991E;
+        color: white;
+    }
+    .albumButton:hover {
+        background: #bcf4af;
+    }
+    .albumButton {
+        cursor: pointer;
+        display: inline-block;
+        min-width: 36px;
+        background: #B2EAA5;
+        padding: 1px 4px;
+        border: 1px solid #004d00;
+        border-radius: 8px;
+    }
+	.setup body {
+		background: rgb(230, 223, 253);
+	}
+	.setup #login {
+		background: rgb(202, 186, 253);
+	}
+	.section, .row {
+		display: inline-block;
+	}
+	.row {
+		margin: 0 0 20px 0;
+	}
+	.name {
+		margin: 0 0 10px 0;
+	}
+    .name span {
+        white-space: nowrap;
+    }
+	.info {
+		margin: 0 0 4px 0;
+		font-size: 80%;
+		font-style: italic;
+		opacity: 0.75;
+	}
+	.title {
+		font-size: 135%;
+		text-align: center;
+		margin: 10px auto;
+		font-weight: 800;
+	}
+	.subtitle {
+		font-size: 125%;
+		text-align: center;
+		margin: 10px 0;
+		font-weight: 600;
+	}
+	.prompt {
+		font-size: 120%;
+		margin-bottom: 10px;
+	}
+	.message {
+		font-style: italic;
+	}
+    .thumbnail {
+        vertical-align: bottom;
+    }
+    .container {
+        display: inline-block;
+        position: relative;
+    }
+    .caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        color: white;
+        padding: 0;
+        margin: 0;
+    }
+    textarea.caption:focus {
+        outline: none;
+    }
+    textarea.caption {
+        display: block;
+        z-index: 10100;
+        border: 2px solid white;
+        padding-top: 2px;
+        background: black;
+    }
+    div.caption {
+        display: inline-block;
+        text-shadow: 1px 1px 3px black;
+        white-space: pre-line;
+        min-height: 20px;
+        cursor: text;
+    }
+    .controls {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 100%;
+        background: black;
+        padding: 6px;
+        z-index: 10100;
+    }
+    .ismobile .controls button {
+        zoom: 1.3;
+    }
+    #cover {
+        background: black;
+        opacity: 0.8;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 10000;
+        position: fixed;
+        display: none;
+
+    }
+    .ismobile #cover {
+        position: absolute;
+    }
+
+    .ismobile .name button {
+        zoom: 1.3;
+    }
+    #config textarea {
+        width: 100%;
+        min-height: 2in;
+        font-family: monospace;
+        font-size: 13px;
+    }
+    .message, .warning {
+        margin: 6px auto 12px auto;
+        max-width: 6in;
+    }
+
+    #uploadArea.uploading #uploadForm {
+        display: none;
+    }
+    #uploadArea #uploadProgress {
+        display: none;
+    }
+    #uploadArea.uploading #uploadProgress {
+        display: block;
+    }
+
+    .title {
+        position: relative;
+    }
+    #logouter {
+        vertical-align: top;
+    }
+    #pallet {
+        padding-top: 3px;
+        position: absolute;
+        right: 10px;
+    }
+
+    #remote {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: 1px;
+        height: 1px;
+    }
+    #remote img {
+        width: 32px;
+        height: 32px;
+    }

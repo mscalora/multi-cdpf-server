@@ -1,0 +1,6 @@
+
+RewriteEngine on
+RewriteRule ^sync$ /sync/ [QSA,R]
+RewriteRule ^(.+[.](jpeg|jpg|png|gif|twig))$ /index.php?f=$1 [QSA,L,NC]
+RewriteRule ^sync/$ /index.php?list=1 [QSA,L]
+RewriteRule ^sync/([0-9]*)$ /index.php?list=$1 [QSA,L]
