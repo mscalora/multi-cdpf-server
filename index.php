@@ -300,13 +300,32 @@ verboseLog("Making directory: $count");
 
 	$message = "";
 
+	$aspectRatio = isset($config['aspectRatio']) ? 1.0*$config['aspectRatio'] : false;
+
     function getImageData($path,$name) {
+		global $aspectRatio, $config;
         $exif = exif_read_data($path, 0, false);
         $result = array(
             "caption" => (isset($exif['COMPUTED']['UserComment']) ? $exif['COMPUTED']['UserComment'] : ""),
             "name" => $name,
             "size" => getimagesize($path)
         );
+		if ($aspectRatio!==false) {
+			$size = $result['size'];
+			$imageRatio = $size[0]/$size[1];
+			if ($aspectRatio>$imageRatio) {
+				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1], $size[0]*$config['thumbHeight']/$size[1]/$aspectRatio];
+				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
+			} else {
+//				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1],100];
+//				$result['pos'] = [ 20, 20 ];
+//				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1], $size[0]*$config['thumbHeight']/$size[1]/$aspectRatio];
+//				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
+
+				$result['crop'] = [$size[1]*$config['thumbWidth']/$size[0]*$aspectRatio, $size[1]*$config['thumbWidth']/$size[0]];
+				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
+			}
+		}
         verboseLog(sprintf("EXIF: %s %s %d '%s'", $path, $name, $result['size'], $result['caption']=='' ? '-none-' : $result['caption']));
         return $result;
     }

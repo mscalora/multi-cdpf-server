@@ -210,3 +210,8 @@
         width: 32px;
         height: 32px;
     }
+
+    .cropper {
+        outline: 1px dashed red;
+        position: absolute;
+    }
