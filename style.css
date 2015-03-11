@@ -212,6 +212,11 @@
     }
 
     .cropper {
-        outline: 1px dashed red;
+        display: none;
+    }
+
+    .show-crop .cropper {
+        outline: 2px dashed red;
         position: absolute;
+        display: block;
     }

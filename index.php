@@ -2,6 +2,7 @@
     //require_once(join(DIRECTORY_SEPARATOR, array(__DIR__, 'lib', 'Mobile_Detect.php')));
     require_once('lib/Mobile_Detect.php');
     require_once("util.php");
+    require_once("image-util.php");
 
     $list = isset($_REQUEST['list']) ? $_REQUEST['list'] : '1';
 
@@ -171,7 +172,8 @@
             mkdir($path);
         }
     }
-verboseLog("Making directory: $count");
+
+    verboseLog("Making directory: $count");
     for($num = 1; $num <= $count; $num++) {
         $path = mkpath("data","$num");
         if (!is_dir($path)) {
@@ -266,6 +268,45 @@ verboseLog("Making directory: $count");
         exit;
     }
 
+    $aspectRatio = isset($config['aspectRatio']) ? 1.0*$config['aspectRatio'] : false;
+
+    if (isset($_REQUEST['crop'])) {
+        verboseLog("CROP hit");
+
+        $right = (isset($_REQUEST['dir']) && $_REQUEST['dir']=='left') ? false : true;
+        $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : false;
+
+        $dataPath = mkpath("data", $name);
+        $validPath = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$name)==1 && is_file($dataPath);
+
+        verboseLog("$dataPath ".is_file($dataPath).", $validPath");
+
+        if ($validPath && $name!==false && is_file($dataPath)) {
+            $undoName = "${name}_CROP-" . date('Ymd\THisT',filemtime($dataPath));
+            $undoFile = mkpath("undo", $undoName);
+            if (!is_dir(dirname($undoFile))) {
+                mkdir(dirname($undoFile),0777, true);
+            }
+            rename($dataPath, $undoFile);
+
+            $result = imageCropAspect($undoFile, $dataPath, $aspectRatio);
+
+            if ($result!==FALSE) {
+                echo $undoName;
+            } else {
+                rename($undoFile, $dataPath);
+                header("HTTP/1.0 500 Server Error");
+                exit;
+            }
+            if (is_file($dataPath)) touch($dataPath);
+            exit;
+        } else {
+            header("HTTP/1.0 403 Forbidden");
+            exit;
+        }
+        exit;
+    }
+
     if (isset($_REQUEST['rotate'])) {
         verboseLog("ROTATE hit");
         $right = (isset($_REQUEST['dir']) && $_REQUEST['dir']=='left') ? false : true;
@@ -277,7 +318,7 @@ verboseLog("Making directory: $count");
         verboseLog("$dataPath ".is_file($dataPath).", $validPath");
 
         if ($validPath && $name!==false && is_file($dataPath)) {
-            $undoName = "${name}_ROT" . ($right ? "R" : "L") . date('Ymd\THisT',filemtime($dataPath));
+            $undoName = "${name}_ROT" . ($right ? "R-" : "L-") . date('Ymd\THisT',filemtime($dataPath));
             $undoFile = mkpath("undo", $undoName);
             if (!is_dir(dirname($undoFile))) {
                 mkdir(dirname($undoFile),0777, true);
@@ -300,8 +341,6 @@ verboseLog("Making directory: $count");
 
 	$message = "";
 
-	$aspectRatio = isset($config['aspectRatio']) ? 1.0*$config['aspectRatio'] : false;
-
     function getImageData($path,$name) {
 		global $aspectRatio, $config;
         $exif = exif_read_data($path, 0, false);
@@ -317,11 +356,6 @@ verboseLog("Making directory: $count");
 				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1], $size[0]*$config['thumbHeight']/$size[1]/$aspectRatio];
 				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
 			} else {
-//				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1],100];
-//				$result['pos'] = [ 20, 20 ];
-//				$result['crop'] = [$size[0]*$config['thumbHeight']/$size[1], $size[0]*$config['thumbHeight']/$size[1]/$aspectRatio];
-//				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
-
 				$result['crop'] = [$size[1]*$config['thumbWidth']/$size[0]*$aspectRatio, $size[1]*$config['thumbWidth']/$size[0]];
 				$result['pos'] = [($config['thumbWidth']-$result['crop'][0])/2, ($config['thumbHeight']-$result['crop'][1])/2];
 			}

@@ -208,7 +208,7 @@ fi
 aspect1=`echo $aspect | cut -d\: -f1`
 aspect2=`echo $aspect | cut -d\: -f2`
 test=`convert xc: -format "%[fx:($aspect2 == $aspect1)?1:0]" info:`
-#echo "aspect1=$aspect1; aspect2=$aspect2;"
+echo "aspect1=$aspect1; aspect2=$aspect2;"
 if [ $aspect1 -eq 0 -o $aspect2 -eq 0 ]; then
 	errMsg "--- DESIRED WIDTH OR HEIGHT MUST NOT BE ZERO ---"
 elif [ "$aspect2" = "" ]; then
