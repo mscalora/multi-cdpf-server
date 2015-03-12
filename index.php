@@ -290,7 +290,44 @@
             $result = imageCropAspect($undoFile, $dataPath, $aspectRatio);
 
             if ($result!==FALSE) {
-                echo $undoName;
+                echo json_encode(array("data" => $name, "undo" => $undoName));
+            } else {
+                rename($undoFile, $dataPath);
+                header("HTTP/1.0 500 Server Error");
+                exit;
+            }
+            if (is_file($dataPath)) touch($dataPath);
+            exit;
+        } else {
+            header("HTTP/1.0 403 Forbidden");
+            exit;
+        }
+        exit;
+    }
+
+    if (isset($_REQUEST['undo'])) {
+
+        $info = isset($_REQUEST['info']) ? json_decode($_REQUEST['info'], true) : false;
+
+        $data = $info !== FALSE && isset($info['data']) ? $info['data'] : false;
+        $undo = $info !== FALSE && isset($info['undo']) ? $info['undo'] : false;
+
+        $dataPath = mkpath("data", $data);
+        $undoPath = mkpath("undo", $undo);
+
+        $validData = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$data)==1 && is_file($dataPath);
+        $validUndo = is_file($undoPath);
+
+        verboseLog("UNDO xhr hit for $data & $undo " . (($validData && $validUndo) ? "validated" : "NOT VALID"));
+
+        if ($validData && $validUndo) {
+            $newUndoName = "${data}_UNDO-" . date('Ymd\THisT',filemtime($dataPath));
+            $newUndoPath = mkpath("undo", $newUndoName);
+            $result = rename($dataPath, $newUndoPath);
+            $result = $result && copy($undoPath, $dataPath);
+
+            if ($result!==FALSE) {
+                echo json_encode(array("data" => $data, "undo" => $newUndoName));
             } else {
                 rename($undoFile, $dataPath);
                 header("HTTP/1.0 500 Server Error");

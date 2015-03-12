@@ -61,31 +61,53 @@
             });
 
             $('body').on('click','button.crop',function(e){
-                var answer = confirm("Are you sure you want to crop this photo?");
-                if (answer && $(this).is(':visible')) {
+                if ($(this).is(':visible')) {
                     var button = $(this).hide();
-                    var dir = button.attr('data-dir');
                     var name = button.attr('data-image');
                     $.ajax({
                         data: {
                             crop: 1
-                            ,dir: dir
                             ,name: name
                             ,pos: 'center'
                             {% if verbose %} ,verbose:1 {% endif %}
                         },
                         url: '?',
                         success: function(data) {
-                            console.log('Crop: %o',data);
                             var img = button.closest('.row').find('img.thumbnail');
                             var url = decacheUrl(img.prop('src'));
                             img.attr('src',url);
                             button.closest('.row').removeClass('show-crop');
-                            button.data('undo',data).text('Undo').removeClass('crop').addClass('undo').show();
+                            button.data('undo',data).text('Undo Crop').removeClass('crop').addClass('undo').show();
                         },
                         error: function(a,b,c) {
                             console.log('Error: %o',data);
                             alert('There was an error cropping your photo, please tray again later.');
+                        }
+                    });
+                }
+            });
+
+            $('body').on('click','button.undo',function(e) {
+                var undoInfo = $(this).data('undo');
+                var button = $(this).hide();
+                if (undoInfo && $(this).is(':visible')) {
+                    $.ajax({
+                        data: {
+                            undo: 1
+                            ,info: undoInfo
+                            {% if verbose %} ,verbose:1 {% endif %}
+                        },
+                        url: '?',
+                        success: function(data) {
+                            var img = button.closest('.row').find('img.thumbnail');
+                            var url = decacheUrl(img.prop('src'));
+                            img.attr('src',url);
+                            var label = button.text()==="Undo Crop" ? "Redo Crop" : "Undo Crop";
+                            button.data('undo',data).text(label).removeClass('crop').addClass('undo').show();
+                        },
+                        error: function(a,b,c) {
+                            console.log('Error: %o %o %o',a,b,c);
+                            alert('There was an error undoing the crop of your photo, please tray again later.');
                         }
                     });
                 }
