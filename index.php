@@ -271,15 +271,13 @@
     $aspectRatio = isset($config['aspectRatio']) ? 1.0*$config['aspectRatio'] : false;
 
     if (isset($_REQUEST['crop'])) {
-        verboseLog("CROP hit");
 
-        $right = (isset($_REQUEST['dir']) && $_REQUEST['dir']=='left') ? false : true;
         $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : false;
 
         $dataPath = mkpath("data", $name);
         $validPath = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$name)==1 && is_file($dataPath);
 
-        verboseLog("$dataPath ".is_file($dataPath).", $validPath");
+        verboseLog("CROP xhr hit for $name at $dataPath " . ($validPath ? "validated" : "NOT VALID"));
 
         if ($validPath && $name!==false && is_file($dataPath)) {
             $undoName = "${name}_CROP-" . date('Ymd\THisT',filemtime($dataPath));
@@ -369,9 +367,9 @@
 	
 		$file = $_FILES["the-file"];
 		$message = "Missing or illegal file name!";
-		
+
 		if (isset($file["name"]) && isLegalImageFileName($file["name"])) {
-		
+
 			$name = preg_replace('/^[.]|[^\w.]/i','-', $file['name']);
 
             $album = isset($_REQUEST['the-album']) ? $_REQUEST['the-album'] : '1';
@@ -391,6 +389,7 @@
                 } while(is_file($path));
 
                 $name = $newName;
+
                 $result = move_uploaded_file($file["tmp_name"],$path);
 
                 if ($result) {
@@ -422,14 +421,15 @@
     }
 
 	if (isset($_REQUEST['delete-image'])) {
-        $file = mkpath("data", $_REQUEST['delete-image']);
-        $thumb = mkpath("thumb", $_REQUEST['delete-image']);
+
+        $name = $_REQUEST['delete-image'];
+        $file = mkpath("data", $name);
+        $thumb = mkpath("thumb", $name);
         $validPath = isImagePath($file);
         verboseLog("Delete:", $file, $validPath ? "PASS":"FAIL");
 
 		if ($validPath) {
-            $name = basename($file);
-            $undo = mkpath("undo", "${name}_DEL" . date('Ymd\THisT',filemtime($file)));
+            $undo = mkpath("undo", "${name}_DEL-" . date('Ymd\THisT',filemtime($file)));
             if (!is_dir(dirname($undo))) {
                 mkdir(dirname($undo),0777, true);
             }
