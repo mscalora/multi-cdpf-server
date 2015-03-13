@@ -32,11 +32,11 @@
 		background: rgb(230, 253, 223);
 		font-family: Oxygen, Verdana, Arial, sans-serif;
 	}
-    #upload, #photos, #footer, #login, .albums, .title {
+    #upload, #photos, #footer, #message, #login, .albums, .title {
         max-width: 900px;
         min-width: 400px;
     }
-    #upload, #photos, #footer, #login, .albums {
+    #upload, #photos, #footer, #message, #login, .albums {
 		text-align: center;
 		background: rgb(202, 253, 186);
 		margin: 10px auto;
@@ -65,10 +65,8 @@
 	.setup #login {
 		background: rgb(202, 186, 253);
 	}
-	.section, .row {
-		display: inline-block;
-	}
 	.row {
+		display: inline-block;
 		margin: 0 0 20px 0;
 	}
 	.name {
@@ -194,9 +192,13 @@
         vertical-align: top;
     }
     #pallet {
-        padding-top: 3px;
+        padding-top: 10px;
         position: absolute;
         right: 10px;
+    }
+
+    #message {
+        display: none;
     }
 
     #remote {
@@ -219,4 +221,7 @@
         outline: 2px dashed red;
         position: absolute;
         display: block;
+    }
+    .row-message {
+        margin: 14px 0;
     }

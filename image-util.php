@@ -6,7 +6,7 @@
         $info = @getimagesize($inFile);
 
         if ($info===FALSE) {
-            error_log("Can't determine input image type: $inFile");
+            errorLog("Can't determine input image type: $inFile");
             return FALSE;
         }
 
@@ -15,7 +15,7 @@
         $typeCode = $info[2];
 
         if ($typeCode!==IMAGETYPE_GIF && $typeCode!==IMAGETYPE_JPEG && $typeCode!==IMAGETYPE_PNG) {
-            error_log("Input image $inFile of unsupported type: $typeCode");
+            errorLog("Input image $inFile of unsupported type: $typeCode");
             return FALSE;
         }
 
@@ -23,7 +23,7 @@
         verboseLog("Image: $inWidth x $inHeight of type $typeCode at $inRatio");
 
         if (abs($inRatio-$outRatio)*max($inWidth,$inHeight)<1.75) {
-            error_log("Image already at correct ratio");
+            errorLog("Image already at correct ratio");
             return FALSE;
         }
 
@@ -50,14 +50,14 @@
         }
 
         if ($inImage===FALSE) {
-            error_log("Failed to load image: $inFile");
+            errorLog("Failed to load image: $inFile");
             return FALSE;
         }
 
         $outImage = imagecreatetruecolor($outWidth, $outHeight);
 
         if ($outImage===FALSE) {
-            error_log("Failed to create output image of size $outWidth x $outHeight");
+            errorLog("Failed to create output image of size $outWidth x $outHeight");
             return FALSE;
         }
 

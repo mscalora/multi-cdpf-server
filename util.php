@@ -52,4 +52,12 @@
         }
     }
 
+    function errorLog() {
+        $args = func_get_args();
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $func = isset($trace[1]['function']) ? $trace[1]['function'] : "main";
+        array_push($args, "($func)");
+        error_log(join(" ", $args));
+    }
+
     putenv('PATH='.getenv('PATH').':/usr/local/bin:'.$appBin);

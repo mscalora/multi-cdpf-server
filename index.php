@@ -290,7 +290,7 @@
             $result = imageCropAspect($undoFile, $dataPath, $aspectRatio);
 
             if ($result!==FALSE) {
-                echo json_encode(array("data" => $name, "undo" => $undoName));
+                echo json_encode(array("data" => $name, "undo" => $undoName), JSON_UNESCAPED_SLASHES);
             } else {
                 rename($undoFile, $dataPath);
                 header("HTTP/1.0 500 Server Error");
@@ -307,7 +307,11 @@
 
     if (isset($_REQUEST['undo'])) {
 
-        $info = isset($_REQUEST['info']) ? json_decode($_REQUEST['info'], true) : false;
+        $delete = $_REQUEST['undo']==='delete';
+        verboseLog('UNDO DELETE: ' . var_export($delete, true));
+        verboseLog('INFO: ' . var_export($_REQUEST['info'], true));
+        $info = isset($_REQUEST['info']) ? $_REQUEST['info'] : false;
+        $info = is_string($info) ? json_decode($info, true) : $info;
 
         $data = $info !== FALSE && isset($info['data']) ? $info['data'] : false;
         $undo = $info !== FALSE && isset($info['undo']) ? $info['undo'] : false;
@@ -315,19 +319,25 @@
         $dataPath = mkpath("data", $data);
         $undoPath = mkpath("undo", $undo);
 
-        $validData = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$data)==1 && is_file($dataPath);
+        $validData = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$data)==1 && ($delete || is_file($dataPath));
         $validUndo = is_file($undoPath);
 
         verboseLog("UNDO xhr hit for $data & $undo " . (($validData && $validUndo) ? "validated" : "NOT VALID"));
 
         if ($validData && $validUndo) {
-            $newUndoName = "${data}_UNDO-" . date('Ymd\THisT',filemtime($dataPath));
-            $newUndoPath = mkpath("undo", $newUndoName);
-            $result = rename($dataPath, $newUndoPath);
+            if ($delete) {
+                $result = TRUE;
+                $newUndoName = '-unset-';
+                $newUndoPath = '-unset-';
+            } else {
+                $newUndoName = "${data}_UNDO-" . date('Ymd\THisT',filemtime($dataPath));
+                $newUndoPath = mkpath("undo", $newUndoName);
+                $result = rename($dataPath, $newUndoPath);
+            }
             $result = $result && copy($undoPath, $dataPath);
 
             if ($result!==FALSE) {
-                echo json_encode(array("data" => $data, "undo" => $newUndoName));
+                echo json_encode(array("data" => $data, "undo" => $newUndoName), JSON_UNESCAPED_SLASHES);
             } else {
                 rename($undoFile, $dataPath);
                 header("HTTP/1.0 500 Server Error");
@@ -365,8 +375,19 @@
 
             $out = exec($cmd);
             if (is_file($dataPath)) touch($dataPath);
-            echo filemtime($dataPath);
+
+            $album = dirname($name);
+            $fname = basename($name);
+            $info = getImageData($dataPath, $fname);
+            $html = $twig->render('image.twig', array_merge($twigData,array(
+                'ajaxMessage' => $message,
+                'item' => $info,
+                'i' => $album,
+            )));
+            verboseLog("Album: $album Filename: $fname Name: $name");
+            verboseLog("HTML: $html");
             verboseLog("ROT CMD: '$cmd'", "OUTPUT:", $out);
+            echo $html;
         } else {
             header("HTTP/1.0 403 Forbidden");
             exit;
@@ -402,6 +423,8 @@
 
     if (isset($_REQUEST['upload-submit']) && isset($_FILES["the-file"])) {
 	
+        verboseLog(var_export($_FILES, TRUE));
+
 		$file = $_FILES["the-file"];
 		$message = "Missing or illegal file name!";
 
@@ -459,24 +482,35 @@
 
 	if (isset($_REQUEST['delete-image'])) {
 
-        $name = $_REQUEST['delete-image'];
-        $file = mkpath("data", $name);
-        $thumb = mkpath("thumb", $name);
-        $validPath = isImagePath($file);
-        verboseLog("Delete:", $file, $validPath ? "PASS":"FAIL");
+        $name = isset($_REQUEST['name']) ? $_REQUEST['name'] : false;
+        $dataPath = mkpath("data", $name);
 
-		if ($validPath) {
-            $undo = mkpath("undo", "${name}_DEL-" . date('Ymd\THisT',filemtime($file)));
-            if (!is_dir(dirname($undo))) {
-                mkdir(dirname($undo),0777, true);
+        $validPath = preg_match('/^\d+\/[^\/]+\.(jpeg|jpg|gif|png)$/i',$name)==1 && is_file($dataPath);
+
+        verboseLog("DELETE xhr hit for $name " . ($validPath ? "validated" : "NOT VALID"));
+
+        if ($validPath && $name!==false && is_file($dataPath)) {
+
+            $thumbPath = mkpath("thumb", $name);
+            $undo = "${name}_DEL-" . date('Ymd\THisT',filemtime($dataPath));
+            $undoPath = mkpath("undo", $undo);
+
+            if (is_file($thumbPath)) {
+                unlink($thumbPath);
             }
-            verboseLog("    UNDO:", $undo);
-            verboseLog("    Thumb:", $thumb);
-            rename($file, $undo);
-            @unlink($thumb);
-			header('Location: /');
-			exit;
-		}
+
+            $result = rename($dataPath, $undoPath);
+
+            if ($result) {
+                $undoInfo = json_encode(array("data" => $name, "undo" => $undo), JSON_UNESCAPED_SLASHES);
+                $justName = preg_replace('|\d+/|','',$name);
+                echo "<span class='file-name'>" . htmlentities($justName) . "</span> was deleted. " .
+                    "<button class='undo undo-delete' data-undo='" . htmlentities($undoInfo). "'>Undo Delete</button>";
+            }
+            exit;
+        }
+        header("HTTP/1.0 500 Server Error");
+        exit;
 	}
 
     $ip = false;

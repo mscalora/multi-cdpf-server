@@ -1,5 +1,5 @@
-<div>
-    <div class="row">
+<div class="section">
+    <div class="row" data-image="{{ i }}/{{ item.name|e('html_attr') }}">
         {% if ajaxMessage %}
         <div class='ajax-message' style="display:none">{{ ajaxMessage }}</div>
         {% endif %}
@@ -11,7 +11,7 @@
                 <button class="rotate" data-dir="right" data-image="{{ i }}/{{ item.name|e('html_attr') }}">&#x21BB;</button>
                 <button class="edit" data-image="{{ i }}/{{ item.name|e('html_attr') }}" data-caption="{{ item.caption }}">Edit Caption</button>
                 {%  if item.crop %}
-                <button class="crop" data-dir="right" data-image="{{ i }}/{{ item.name|e('html_attr') }}">Crop</button>
+                <button class="crop" data-image="{{ i }}/{{ item.name|e('html_attr') }}">Crop</button>
                 {% endif %}
             </span>
         </div>

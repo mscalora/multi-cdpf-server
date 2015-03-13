@@ -58,8 +58,9 @@
 
 	if (!$authed) {
 		if ($_SERVER["REQUEST_METHOD"]!="GET") {
-			header('Location: /');
-			exit;		
+            header("x-login-url: /");
+            header("HTTP/1.0 401 Unauthorized");
+            exit;
 		}
 		
 		echo $twig->render('auth.twig', array_merge($twigData,array(
